@@ -1,0 +1,298 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [ 3 0 R 5 0 R 7 0 R ] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 9 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 3628 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+(SMART CAMPUS API CONCEPTUAL REPORT) Tj
+T*
+() Tj
+T*
+(1.1 JAX-RS Resource Lifecycle And Thread Safety) Tj
+T*
+() Tj
+T*
+(The default JAX-RS resource lifecycle is request scoped. The runtime normally creates a new) Tj
+T*
+(resource class instance for each incoming HTTP request. That means instance fields inside) Tj
+T*
+(resource classes should not be treated as long-lived shared storage, because a different) Tj
+T*
+(resource instance may handle the next request.) Tj
+T*
+() Tj
+T*
+(For this coursework, shared state is placed in a singleton CampusStore, not in resource) Tj
+T*
+(instance fields. The store uses ConcurrentHashMap for the main collections and synchronized) Tj
+T*
+(methods for compound operations that must be atomic, such as registering a sensor and adding) Tj
+T*
+(its ID to the parent room, deleting a room only after checking its sensors, and adding a) Tj
+T*
+(reading while updating the parent sensor's currentValue. This avoids lost updates and race) Tj
+T*
+(conditions while still keeping the implementation in memory as required.) Tj
+T*
+() Tj
+T*
+(1.2 Discovery Endpoint And HATEOAS) Tj
+T*
+() Tj
+T*
+(Hypermedia is a hallmark of advanced RESTful design because responses do not only return) Tj
+T*
+(data; they also show clients where related actions and resources are located. The discovery) Tj
+T*
+(endpoint returns version information, contact details, and links to the main collections.) Tj
+T*
+(This makes the API more self-documenting and helps client developers navigate from the API) Tj
+T*
+(root to rooms, sensors, and readings without hard-coding every URL from separate) Tj
+T*
+(documentation.) Tj
+T*
+() Tj
+T*
+(Static documentation can become stale when routes change. Hypermedia links travel with the) Tj
+T*
+(API response, so clients can discover supported navigation paths at runtime and reduce) Tj
+T*
+(coupling to fixed URL assumptions.) Tj
+T*
+() Tj
+T*
+(2.1 Returning Room IDs Versus Full Room Objects) Tj
+T*
+() Tj
+T*
+(Returning only room IDs keeps payloads smaller and saves bandwidth, especially when there) Tj
+T*
+(are thousands of rooms or mobile clients with limited network capacity. However, clients) Tj
+T*
+(then need to make extra requests to fetch each room's name, capacity, and sensor list, which) Tj
+T*
+(increases latency and client-side processing.) Tj
+T*
+() Tj
+T*
+(Returning full room objects costs more bandwidth but gives clients immediately useful data) Tj
+T*
+(in one response. For this coursework, GET /rooms returns full room objects because) Tj
+T*
+(facilities managers need a comprehensive overview and the rubric asks for a comprehensive) Tj
+T*
+(room list.) Tj
+T*
+() Tj
+T*
+(2.2 DELETE Idempotency) Tj
+T*
+() Tj
+T*
+(The successful room deletion operation is idempotent in server-state terms. If a client) Tj
+T*
+(deletes an empty room such as HALL-100, the first request removes it and returns 204 No) Tj
+T*
+(Content. If the same request is sent again, the room is still absent, and the server state) Tj
+T*
+(remains unchanged. The response can still be 204 No Content because the desired state, "this) Tj
+T*
+(room no longer exists", has already been achieved.) Tj
+T*
+() Tj
+T*
+(For a room with assigned sensors, repeated DELETE requests return 409 Conflict and leave the) Tj
+T*
+(room unchanged each time. That also keeps the server state stable across repeated identical) Tj
+T*
+(requests.) Tj
+T*
+() Tj
+T*
+(3.1 @Consumes And Media Type Mismatches) Tj
+T*
+() Tj
+T*
+(The @Consumes\(MediaType.APPLICATION_JSON\) annotation tells JAX-RS that the method accepts) Tj
+T*
+(JSON request bodies. If a client sends text/plain or application/xml to that method, Jersey) Tj
+T*
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 9 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 3695 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+(cannot match the request entity media type to the resource method. The runtime rejects the) Tj
+T*
+(request before the method logic executes and returns 415 Unsupported Media Type.) Tj
+T*
+() Tj
+T*
+(This protects the API from trying to deserialize unsupported formats as Java POJOs. In this) Tj
+T*
+(project, the WebApplicationExceptionMapper converts that failure into a structured JSON) Tj
+T*
+(error response instead of a default server page.) Tj
+T*
+() Tj
+T*
+(3.2 Query Parameters Versus Path Parameters For Filtering) Tj
+T*
+() Tj
+T*
+(Path parameters are best for identifying a specific resource or nested resource, such as) Tj
+T*
+(/sensors/CO2-001. Query parameters are better for filtering, searching, sorting, and) Tj
+T*
+(optional modifiers on a collection, such as /sensors?type=CO2.) Tj
+T*
+() Tj
+T*
+(The query parameter approach is superior here because type is not a unique resource) Tj
+T*
+(identity. It is a search criterion that may match many sensors or no sensors. Query) Tj
+T*
+(parameters also scale naturally if more filters are added later, such as status=ACTIVE or) Tj
+T*
+(roomId=LIB-301, without creating awkward nested paths for every possible search combination.) Tj
+T*
+() Tj
+T*
+(4.1 Sub-Resource Locator Benefits) Tj
+T*
+() Tj
+T*
+(The sub-resource locator in SensorResource delegates /sensors/{sensorId}/readings to a) Tj
+T*
+(dedicated SensorReadingResource. This keeps the main sensor controller focused on sensor) Tj
+T*
+(collection and sensor detail operations, while reading history logic is isolated in a class) Tj
+T*
+(that understands the selected parent sensor context.) Tj
+T*
+() Tj
+T*
+(In larger APIs, this pattern prevents one massive controller from containing every nested) Tj
+T*
+(path such as sensors, readings, reading IDs, and future reading analytics. It improves) Tj
+T*
+(maintainability, testing, readability, and separation of responsibilities.) Tj
+T*
+() Tj
+T*
+(5.2 Why 422 Is Better Than 404 For Missing Payload References) Tj
+T*
+() Tj
+T*
+(When a client posts a sensor with a non-existent roomId, the endpoint /sensors exists and) Tj
+T*
+(the JSON body may be syntactically valid. The problem is semantic: the payload references a) Tj
+T*
+(room that cannot be linked. 422 Unprocessable Entity describes that situation more) Tj
+T*
+(accurately than 404 Not Found.) Tj
+T*
+() Tj
+T*
+(A 404 would suggest the requested URL was missing. Here the URL is valid, but the server) Tj
+T*
+(cannot process the entity because one of its internal references violates business rules.) Tj
+T*
+() Tj
+T*
+(5.4 Cybersecurity Risks Of Stack Traces) Tj
+T*
+() Tj
+T*
+(Raw Java stack traces expose implementation details that attackers can use. They may reveal) Tj
+T*
+(package names, class names, method names, line numbers, server file paths, framework) Tj
+T*
+(versions, dependency names, and internal control flow. That information helps attackers) Tj
+T*
+(fingerprint the technology stack and search for known vulnerabilities or weak points.) Tj
+T*
+() Tj
+T*
+(The global exception mapper returns a generic 500 Internal Server Error JSON body to) Tj
+T*
+(external clients while logging the real exception internally for developers. This keeps the) Tj
+T*
+(API leak-proof without losing observability.) Tj
+T*
+() Tj
+T*
+(5.5 Why Filters Are Better For Logging) Tj
+T*
+() Tj
+T*
+(Logging is a cross-cutting concern because it applies to every endpoint rather than one) Tj
+T*
+(business operation. A JAX-RS request/response filter centralizes that concern in one class,) Tj
+T*
+(so every incoming request and outgoing status code is logged consistently.) Tj
+T*
+() Tj
+T*
+(If Logger.info\(\) calls were manually placed in every resource method, the code would become) Tj
+T*
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 9 0 R >> >> /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 196 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+(repetitive, easy to forget, and harder to maintain. Filters keep resource methods focused on) Tj
+T*
+(business logic while still providing API observability.) Tj
+T*
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000129 00000 n 
+0000000255 00000 n 
+0000003935 00000 n 
+0000004061 00000 n 
+0000007808 00000 n 
+0000007934 00000 n 
+0000008181 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+8251
+%%EOF

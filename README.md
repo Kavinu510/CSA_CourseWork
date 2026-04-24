@@ -35,19 +35,19 @@ If Maven is globally installed, the equivalent package command is `mvn clean pac
 
 ## API Endpoints
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| GET | `/api/v1` | Discovery metadata, contact info, and resource links |
-| GET | `/api/v1/rooms` | List all rooms as full JSON objects |
-| POST | `/api/v1/rooms` | Create a room |
-| GET | `/api/v1/rooms/{roomId}` | Fetch one room |
-| DELETE | `/api/v1/rooms/{roomId}` | Delete a room if no sensors are assigned |
-| GET | `/api/v1/sensors` | List sensors, optionally filtered by `type` |
-| POST | `/api/v1/sensors` | Register a sensor after validating `roomId` |
-| GET | `/api/v1/sensors/{sensorId}` | Fetch one sensor |
-| GET | `/api/v1/sensors/{sensorId}/readings` | Fetch sensor reading history |
-| POST | `/api/v1/sensors/{sensorId}/readings` | Add a reading and update parent sensor value |
-| GET | `/api/v1/debug/error` | Demonstrate global 500 error mapping |
+| Method | Path                                  | Purpose                                              |
+| ------ | ------------------------------------- | ---------------------------------------------------- |
+| GET    | `/api/v1`                             | Discovery metadata, contact info, and resource links |
+| GET    | `/api/v1/rooms`                       | List all rooms as full JSON objects                  |
+| POST   | `/api/v1/rooms`                       | Create a room                                        |
+| GET    | `/api/v1/rooms/{roomId}`              | Fetch one room                                       |
+| DELETE | `/api/v1/rooms/{roomId}`              | Delete a room if no sensors are assigned             |
+| GET    | `/api/v1/sensors`                     | List sensors, optionally filtered by `type`          |
+| POST   | `/api/v1/sensors`                     | Register a sensor after validating `roomId`          |
+| GET    | `/api/v1/sensors/{sensorId}`          | Fetch one sensor                                     |
+| GET    | `/api/v1/sensors/{sensorId}/readings` | Fetch sensor reading history                         |
+| POST   | `/api/v1/sensors/{sensorId}/readings` | Add a reading and update parent sensor value         |
+| GET    | `/api/v1/debug/error`                 | Demonstrate global 500 error mapping                 |
 
 ## Sample Curl Commands
 
@@ -123,11 +123,11 @@ curl -i http://localhost:8080/smart-campus-api/api/v1/debug/error
 
 The API starts with demo data so the Postman video can immediately show success and error paths.
 
-| Resource | IDs |
-| --- | --- |
-| Rooms | `LIB-301`, `LAB-210`, `HALL-100` |
-| Active sensors | `TEMP-001`, `CO2-001` |
-| Maintenance sensor | `OCC-009` |
+| Resource           | IDs                              |
+| ------------------ | -------------------------------- |
+| Rooms              | `LIB-301`, `LAB-210`, `HALL-100` |
+| Active sensors     | `TEMP-001`, `CO2-001`            |
+| Maintenance sensor | `OCC-009`                        |
 
 `HALL-100` has no sensors and can be deleted successfully. `LIB-301` has assigned sensors and returns `409 Conflict` if deletion is attempted.
 
@@ -192,21 +192,3 @@ The global exception mapper returns a generic `500 Internal Server Error` JSON b
 Logging is a cross-cutting concern because it applies to every endpoint rather than one business operation. A JAX-RS request/response filter centralizes that concern in one class, so every incoming request and outgoing status code is logged consistently.
 
 If `Logger.info()` calls were manually placed in every resource method, the code would become repetitive, easy to forget, and harder to maintain. Filters keep resource methods focused on business logic while still providing API observability.
-
-## Video Demonstration Script
-
-1. Run the project from NetBeans on Apache Tomcat 9 and show the deployed context path `/smart-campus-api`.
-2. In Postman, call `GET /smart-campus-api/api/v1` and highlight version, contact, resources, and links.
-3. Call `POST /rooms`, show `201 Created` and the `Location` header, then call `GET /rooms/{id}`.
-4. Call `DELETE /rooms/HALL-100` and show `204 No Content`.
-5. Call `DELETE /rooms/LIB-301` and show structured JSON `409 Conflict`.
-6. Call `POST /sensors` with `roomId: NO-ROOM` and show `422 Unprocessable Entity`.
-7. Call `POST /sensors` with a valid room and show `201 Created`.
-8. Call `GET /sensors?type=CO2`, then change the type to show dynamic filtering.
-9. Call `GET /sensors/CO2-001/readings`, then `POST /sensors/CO2-001/readings`, then `GET /sensors/CO2-001` to show `currentValue` changed.
-10. Call `POST /sensors/OCC-009/readings` and show `403 Forbidden`.
-11. Send `text/plain` to `POST /sensors` and show JSON `415 Unsupported Media Type`.
-12. Call `GET /debug/error` and show JSON `500 Internal Server Error` with no stack trace.
-13. Show the terminal logs containing request methods, URIs, and response status codes.
-#   C S A _ C o u r s e W o r k  
- 
